@@ -3,23 +3,10 @@
 ## インストールするもの
 - VirtualBox
 - Vagrant
-- PHP
+- PHP バージョン7.2
 - Nginx
-- Laravel
+- Laravel バージョン6.0（仕様により6.20がインストールされてしまいます）
 
-## 仮想環境構築の流れ
-1. VirtualBoxをPCにインストールします。<br>VirtualBoxは使用しているPCにインストールされているOSとは別の仮想的なOSを立ち上げるためのソフトウェアです。
-
-2. VagrantをPCにインストールします。<br>VirtualBoxのみでも仮想環境自体を構築することはできますが、Vagrantを使用することでより効率良く構築することが可能になります。
-例えば、構築したい仮想環境の内容をファイルで管理し、コマンド一つで起動や破壊を行うことができます。
-
-3. Vagrantを使って仮想環境のOSをダウンロードします。
-
-4. 作業用ディレクトリを作成し、設定ファイルの生成、仮想環境に使うOSを指定します。
-
-5. Vagrantfileを編集します。
-
-## やってみよう
 ### VirtualBoxのインストール
 ___
 VirtualBoxを[公式サイト](https://www.virtualbox.org/wiki/Download_Old_Builds_6_0)からダウンロード後、インストールしてください。<br>
@@ -84,7 +71,7 @@ Enter your choice: 3
 Successfully added box 'centos/7' (v1902.01) for 'virtualbox'!
 ```
 ___
-Vagrantの作業用ディレクトリを作成
+### Vagrantの作業用ディレクトリを作成
 ___
 Vagrantの作業用ディレクトリを作成します。<br>
 作成したディレクトリを移動させると、ゲストOSへのログインが上手くいかなくなってしまうので、自分が作業しやすいディレクトリに作成するのが良いでしょう。<br>
@@ -114,14 +101,19 @@ ___
 ### Vagrantfileの編集
 ___
 Vagrantfileはこれから稼働させる仮想環境の設計書のようなものです。これをもとに仮想環境が構築されます。<br>
+`vagrant_test`ディレクトリにある`Vagrantfile`を編集していきます。
+`vagrant_test`ディレクトリ内で下記のコマンドを実行し`Vagrantfile`をエディタで編集しましょう。
+```
+vi Vagrantfile
+```
 変更する点は3つあります。
-まずは変更点①、変更点②に該当する行の**\#**を削除してください。
+まずは変更点①、変更点②に該当する行の`#`を削除してください。
 ```
 # 変更点①
 config.vm.network "forwarded_port", guest: 80, host: 8080
 
 # 変更点②
-config.vm.network "private_network", ip: "192.168.33.10"
+config.vm.network "private_network", ip: "192.168.33.19"
 ```
 次に該当の箇所を以下のように編集してください
 ```
@@ -132,10 +124,10 @@ config.vm.synced_folder "./", "/vagrant", type:"virtualbox"
 ```
 変更後、上書き保存をして終了してください。
 ___
-Vagrant プラグインのインストール
+### Vagrant プラグインのインストール
 ___
 vagrant-vbguest というプラグインをインストールします。<br>
-agrant-vbguestは初めに追加したBoxの中にインストールされているGuest Additionsというもののバージョンを、VirtualBoxのバージョンに合わせて最新化してくれるプラグインです。<br>
+vagrant-vbguestは初めに追加したBoxの中にインストールされているGuest Additionsというもののバージョンを、VirtualBoxのバージョンに合わせて最新化してくれるプラグインです。<br>
 下記のコマンドを実行し、インストールしてください。
 ```
 vagrant plugin install vagrant-vbguest
@@ -151,6 +143,28 @@ Vagrantfileがあるディレクトリにて以下のコマンドを実行して
 ```
 vagrant up
 ```
+もし下記のようなエラーが起きてしまった場合、
+> vboxの内容が CentOS 7.8で構成されているが、CentOS 7.9がリリースされてしまったため、インストールされているカーネルのバージョンと、一致する kernel-devel パッケージがリポジトリから取得できなくなってしまった。vbguest を使用しているため VirtualBox Guest Additions の更新で 該当するバージョンの kernel-devel を取得できずに失敗している。
+
+という原因が考えられます。
+```
+The following SSH command responded with a non-zero exit status.
+Vagrant assumes that this means the command failed!
+umount /mnt
+
+Stdout from the command:
+
+Stderr from the command:
+
+umount: /mnt: not mounted
+```
+下記のコマンドに従って再度`vagrant up`をしてみてください
+```
+vagrant ssh
+sudo yum -y update kernel
+exit
+vagrant reload --provision
+```
 ___
 ### ゲストOSへのログイン
 ___
@@ -164,6 +178,20 @@ vagrant ssh
 Welcome to your Vagrant-built virtual machine.
 [vagrant@localhost ~]$
 ```
+#### windows
+前のセクションでインストールしたターミナルソフトウェアを使用します。
+以下は、RLoginでのログイン方法です。
+
+まずは Rloginを起動後 「作成」ボタンを押下しましょう。
+すると以下の画面が表示されるので、赤枠の中の値をそれぞれに入力してください。
+![Rloginの画面](https://res.cloudinary.com/gizumo-inc/image/upload/v1587461022/curriculums/Server%20Lesson/Rlogin1.png)
+
+「SSH認証鍵」のボタンを押下すると以下の画面が開かれるため
+vagrant_test/.vagrant/machines/default/virtualbox 下の private_key を指定して開くボタンを押しましょう。
+![Rloginの画面](https://res.cloudinary.com/gizumo-inc/image/upload/v1587461025/curriculums/Server%20Lesson/Rlogin2.png)
+以上で設定が完了したので、設定した接続情報を選択して「OK」ボタンでゲストOSにログインしましょう。
+
+※初回ログイン時に注意が表示されますが、OKを押してください。
 ___
 必要なパッケージのインストール
 ___
@@ -171,6 +199,7 @@ ___
 まずはグループパッケージをインストールしていきましょう。
 下記のコマンドを実行してください。gitなどの開発に必要なパッケージを一括でインストールできます。
 ```
+#[vagrant@localhost ~]$ (ゲストOSにログイン状態で)
 sudo yum -y groupinstall "development tools"
 ```
 ___
@@ -181,13 +210,16 @@ Laravelを動作させるにはPHPのバージョン7以上をインストール
 yumではなく外部パッケージツールをダウンロードして、そこからPHPをインストールしていきます。
 まずは、PHPのインストールに必要な外部パッケージツールをダウンロードします。
 ```
+#[vagrant@localhost ~]$ (ゲストOSにログイン状態で)
 sudo yum -y install epel-release wget
 sudo wget http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
 sudo rpm -Uvh remi-release-7.rpm
 ```
 次にPHPをインストールし確認のためバージョンをみるコマンドを実行します。
+今回インストールするPHPのバージョンは7.3です。
 ```
-sudo yum -y install --enablerepo=remi-php72 php php-pdo php-mysqlnd php-mbstring php-xml php-fpm php-common php-devel php-mysql unzip
+#[vagrant@localhost ~]$ (ゲストOSにログイン状態で)
+sudo yum -y install --enablerepo=remi-php73 php php-pdo php-mysqlnd php-mbstring php-xml php-fpm php-common php-devel php-mysql unzip
 php -v
 ```
 バージョンが確認できればインストールの完了です。
@@ -196,6 +228,7 @@ composerのインストール
 ___
 PHPのパッケージ管理ツールであるcomposerをインストールしていきます。
 ```
+#[vagrant@localhost ~]$ (ゲストOSにログイン状態で)
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 php composer-setup.php
 php -r "unlink('composer-setup.php');"
@@ -206,19 +239,33 @@ composer -v
 ```
 composer のバージョンが確認できたら、composerのインストールは完了です。
 ___
-Laravelアプリケーションのコピー
+### Laravelアプリケーションの作成
 ___
-LaravelアプリケーションをゲストOS内で動かすためにLaravelプロジェクトのコピーをvagrant_testディレクトリ下に作成します。
+LaravelアプリケーションをゲストOS内で動かすために`vagrant_test`ディレクトリ下にLaravelアプリケーションを作成していきます。ゲストOSにログインしている場合はログアウトしてください。
+下記のコマンドを実行してください。
 ```
 cd vagrant_test
-cp -r laravel_appディレクトリまでの絶対パス ./
+composer create-project laravel/laravel --prefer-dist laravel_app 6.0
 ```
+その後は[Laravelのレッスン](https://giztech.gizumo-inc.work/lesson/14)に従いtodoアプリケーションの作成を進めてください。
+___
+### make:Auth について
+___
+[Laravelのレッスン](https://giztech.gizumo-inc.work/lesson/14)では`php artisan make:Auth`が使えたのですが、Laravel6.*系からは使用できなくなりました。代わりに下記のコマンドを実行していきます。
+```
+composer require laravel/ui "^1.0" --dev
+php artisan ui vue --auth
+```
+コマンド実行後は引き続き[Laravelのレッスン](https://giztech.gizumo-inc.work/lesson/14)に従ってアプリケーションの作成を行ってください。
 ___
 ### ゲストOS内にWebサーバーとなるNginxをインストール
 ___
 Nginxの最新版をインストールしていきます。
 viエディタを使用して以下のファイルを作成します。
+ゲストOSにログイン後、下記のコマンドを実行してください。
+このコマンドでは`/etc/yum.repos.d`下に`nginx.repo`を新規作成すると同時にエディタを開いています。ファイルに何も書かれていなくても問題ありません。
 ```
+#[vagrant@localhost ~]$ (ゲストOSにログイン状態で)
 sudo vi /etc/yum.repos.d/nginx.repo
 ```
 以下のように編集してください
@@ -231,29 +278,32 @@ enabled=1
 ```
 書き終えたら保存して、以下のコマンドを実行しNginxのインストールを実行します。
 ```
-$ sudo yum install -y nginx
-$ nginx -v
+#[vagrant@localhost ~]$ (ゲストOSにログイン状態で)
+sudo yum install -y nginx
+nginx -v
 ```
 Nginxのバージョンが確認できたらインストール完了です
 Nginxの起動をしましょう。
 ```
+#[vagrant@localhost ~]$ (ゲストOSにログイン状態で)
 sudo systemctl start nginx
 ```
-ブラウザにて [http://192.168.33.10](http://192.168.33.10) (Vagrantfileでipを書き換えた方はそのipアドレス)と入力し、NginxのWelcomeページが表示されましたでしょうか？
+ブラウザにて [http://192.168.33.19](http://192.168.33.19) (Vagrantfileでipを書き換えた方はそのipアドレス)と入力し、NginxのWelcomeページが表示されましたでしょうか？
 表示されたら問題なく動いています。
 ___
 ### Laravelを動かす
 ___
 Nginxにも設定ファイルが存在しているので編集を行います。
-使用しているOSがCentOSの場合、`/etc/nginx/conf.d` ディレクトリ下の ``default.conf` ファイルが設定ファイルとなります。
+使用しているOSがCentOSの場合、`/etc/nginx/conf.d` ディレクトリ下の `default.conf` ファイルが設定ファイルとなります。
 ```
+#[vagrant@localhost ~]$ (ゲストOSにログイン状態で)
 sudo vi /etc/nginx/conf.d/default.conf
 ```
 以下に従って編集してください
 ```
 server {
   listen       80;
-  server_name  192.168.33.10; # Vagranfileでコメントを外した箇所のipアドレスを記述してください。
+  server_name  192.168.33.19; # Vagranfileでコメントを外した箇所のipアドレスを記述してください。
   # ApacheのDocumentRootにあたります
   root /vagrant/laravel_app/public; # 追記
   index  index.html index.htm index.php; # 追記
@@ -283,6 +333,7 @@ server {
 Nginxの設定ファイルの変更は、以上です。
 次に php-fpm の設定ファイルを編集していきます。
 ```
+#[vagrant@localhost ~]$ (ゲストOSにログイン状態で)
 sudo vi /etc/php-fpm.d/www.conf
 ```
 以下に従って編集してください
@@ -299,10 +350,11 @@ group = nginx
 設定ファイルの変更に関しては、以上となります。
 では早速起動しましょう(Nginxは再起動になります)。
 ```
-$ sudo systemctl restart nginx
-$ sudo systemctl start php-fpm
+#[vagrant@localhost ~]$ (ゲストOSにログイン状態で)
+sudo systemctl restart nginx
+sudo systemctl start php-fpm
 ```
-再度ブラウザにて、 [http://192.168.33.10](http://192.168.33.10)にアクセスしてください
+再度ブラウザにて、 [http://192.168.33.19](http://192.168.33.19)にアクセスしてください
 画面は表示されますが、以下のようなLaravelのエラーが表示されると思います。
 ```
 The stream or file "/vagrant/laravel_app/storage/logs/laravel.log" could not be opened: failed to open stream: Permission denied
@@ -310,6 +362,7 @@ The stream or file "/vagrant/laravel_app/storage/logs/laravel.log" could not be 
 これは 先程php-fpmの設定ファイルの user と group を `nginx` に変更したと思いますが、ファイルとディレクトリの実行 user と group に `nginx` が許可されていないため起きているエラーです。
 以下のコマンドを実行してみてください。
 ```
+# /vagrant/laravel_app/ディレクトリで
 $ ls -la ./ | grep storage && ls -la storage/ | grep logs && ls -la storage/logs/ | grep laravel.log
 ```
 出力結果から、storageディレクトリも logsディレクトリも laravel.logファイルも全て user と group が
@@ -356,11 +409,30 @@ syntax error, unexpected '}', expecting ';'
 では変更した `routes/web.php`の内容を元に戻して再度 [http://192.168.33.10](http://192.168.33.10) にアクセスして正常にLaravelのWelcome画面の表示をしてください。
 
 ___
+### それでもpermission denied が発生してしまう場合
+___
+`sudo chmod -R 777 storage`を行ってもpermission denied が発生してしまう場合は以下の手順に従ってください。
+まずVagrantfileを開きます。
+```
+# vagrant_testディレクトリ下
+vi Vagrantfile
+```
+下記に従ってVagrantfileの編集を行ってください
+```
+config.vm.synced_folder "./", "/vagrant", type:"virtualbox" # この行を↓のように編集
+config.vm.synced_folder "./", "/vagrant", type:"virtualbox", mount_options: ["dmode=777", "fmode=777"]
+
+```
+上書き保存をして終了してください。
+再度[http://192.168.33.10](http://192.168.33.10)にアクセスをしてエラーが起きないか確認してください。
+
+___
 ### データベースのインストール
 ___
 今回インストールするデータベースはMySQLとなります。versionは5.7を使用します。
 rpmに新たにリポジトリを追加し、インストールを行います。
 ```
+#[vagrant@localhost ~]$ (ゲストOSにログイン状態で)
 sudo wget https://dev.mysql.com/get/mysql57-community-release-el7-7.noarch.rpm
 sudo rpm -Uvh mysql57-community-release-el7-7.noarch.rpm
 sudo yum install -y mysql-community-server
@@ -421,6 +493,7 @@ LaravelのTodoアプリケーションを動かす上で使用するデータベ
 ```
 mysql > create database laravel_app;
 ```
+
 ___
 ### Laravelを動かす
 ___
@@ -430,142 +503,9 @@ DB_PASSWORD=
 # ↓ 以下に編集
 DB_PASSWORD=登録したパスワード
 ```
-laravel_appディレクトリに移動して `php artisan migrate` を実行します。
+`/vagrant/laravel_app`ディレクトリに移動して `php artisan migrate` を実行します。
 マイグレーションが問題なく実行できた後、ブラウザ上でユーザー登録ができればローカルで動かしていたLaravelを仮想環境上で全く同じように動かすことができたということになります。
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#### 解説
- 1. 変更点①<br>
-   ポートフォワーディングを設定しています。<br>ポートフォワーディングとは自らの特定のポート番号への通信を別のアドレスの特定のポートへ自動的に転送することです。ここではゲストOS（Vagrant）の80番の通信をホストOS（MacやWindowsなど）の8080へ転送する設定をしています。<br>
-   > Vagrant 仮想マシン内でサーバを立ち上げた場合、デフォルトではそのポートは仮想マシン内で閉じた世界のものになっています。 例えば、仮想マシン内で Web サーバをポート番号 80 で立ち上げただけでは、外の世界（ホスト側）から http://localhost/ でアクセスできるようにはなりません。 <br>
-   ポートフォワードの設定では、ホストマシンのあるポート番号を、特定の仮想マシンのポート番号にマッピングします。 ホストマシンの特定のポート番号にアクセスがあったときに、ホストマシンが仮想マシンに対してリクエストを転送することで、間接的に仮想マシンへ接続されます。
-
-   つまり、閉じた世界にあった仮想マシン内のWebサーバーを自分のPC(ホストマシン)のポート番号と繋げてあげることで、自分のPCを経由して仮想マシン内のWebサーバーを通信させることができるというわけです。
-
-   2. 変更点②<br>
-   プライベートネットワークを設定しています。<br>
-   プライベートネットワークとは、システムの内部での通信のために用いられるコンピュータネットワークのことです。システム外部から内部のプライベートネットワークへの通信はできません。
-
-
-
-
-___
-次にWebサーバーとしてApacheをインストールします。
-```
-sudo yum -y install httpd
-httpd -v
-```
-バージョンが確認できたらインストール成功です。<br>
-続いてApacheの設定ファイルを編集していきます。<br>
-以下のコマンドを実行し、設定ファイルを開いてください
-```
-sudo vi /etc/httpd/conf/httpd.conf
-```
-インサートモードで下記のように設定ファイルを編集してください。
-```
-# 省略
-
-# 変更点①
-DocumentRoot "/var/www/html"
-# ↓ 以下に編集
-DocumentRoot "/vagrant/laravel_app/public"
-
-# 省略
-
-# 変更点②
-<Directory "/var/www/">
-  AllowOverride None
-  Require all granted
-</Directory>
-# ↓ 以下に編集
-<Directory "/vagrant/laravel_app/public">
-  AllowOverride All 
-  Require all granted
-</Directory>
-
-# 省略
-
-# 変更点③
-User apache
-Group apache
-# ↓ 以下に編集
-User vagrant
-Group vagrant
-```
-___
-Apacheの起動
-___
-以下のコマンドを実行してApacheを起動をします。
-```
-sudo systemctl start httpd
-```
-Activeの箇所にinactive あるいは falied という記述がある場合は、Apacheの起動ができていないか設定ファイルの編集ミスで起動に失敗していますので、再度コマンドを実行し直すか編集した箇所を見直してください。<br>
-下記のコマンドを実行し、以下のような表示がされたら起動できています。
-```
-sudo systemctl status httpd
-```
-```
-
- ● httpd.service - The Apache HTTP Server
-   Loaded: loaded (/usr/lib/systemd/system/httpd.service; disabled; vendor preset: disabled)
-   Active: active (running) since 土 XXXX-XX-XX XX:XX:XX UTC; 2s ago
-     Docs: man:httpd(8)
-           man:apachectl(8)
- Main PID: 16536 (httpd)
-   Status: "Processing requests..."
-   CGroup: /system.slice/httpd.service
-           ├─16536 /usr/sbin/httpd -DFOREGROUND
-           ├─16537 /usr/sbin/httpd -DFOREGROUND
-           ├─16538 /usr/sbin/httpd -DFOREGROUND
-           ├─16539 /usr/sbin/httpd -DFOREGROUND
-           ├─16540 /usr/sbin/httpd -DFOREGROUND
-           └─16541 /usr/sbin/httpd -DFOREGROUND
-
- X月 XX XX:XX:XX localhost.localdomain systemd[1]: Starting The Apache HTTP Server...
- X月 XX XX:XX:XX localhost.localdomain httpd[16536]: AH00558: httpd: Could not reliably determine the server's fully qualified domain name, using ... message
- X月 XX XX:XX:XX localhost.localdomain systemd[1]: Started The Apache HTTP Server.
- Hint: Some lines were ellipsized, use -l to show in full.
- ```
- ___
- ファイアーフォールの設定
- ___
- Apacheを起動し、[http://192.168.33.10](http://192.168.33.10)にアクセスしてもファイアーフォールによってアクセスが拒否されてしまいます。
- 下記のコマンドを実行し、80ポートを経由したhttp通信によるアクセスを許可してあげましょう。
- ```
- # ファイヤーウォールの起動
-$ sudo systemctl start firewalld.service
-$ sudo firewall-cmd --add-service=http --zone=public --permanent
-
-# 新たに追加を行ったのでそれをファイヤーウォールに反映させるコマンドも合わせて実行します
-$ sudo firewall-cmd --reload
-```
-一旦この状態で画面を確認してみます。
-
-もしまだ表示できないようであれば、一度以下のコマンドを実行してください。<br>
-その後再度[http://192.168.33.10](http://192.168.33.10)にアクセスしてみてください
-```
-$ sudo systemctl restart httpd
-```
 ___
 ### それでもアクセスできない場合
 ___
@@ -585,8 +525,11 @@ sudo vi /etc/selinux/config
 SELINUX=enforcing #この部分を↓のように書き換える
 SELINUX=disabled
 ```
-再度[http://192.168.33.10](http://192.168.33.10)にアクセスしてみてください
-まだ表示できないようであれば、下記のコマンドを実行後もう一度アクセスしてみてください
+設定を反映させるためにゲストOSを再起動する必要があるので、ゲストOSをから一度ログアウトして下記コマンドを実行してください。
 ```
-sudo systemctl restart httpd
+exit
+vagrant reload
+vagrant ssh
+sudo systemctl start nginx
+sudo systemctl start php-fpm
 ```

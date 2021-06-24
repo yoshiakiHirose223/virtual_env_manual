@@ -1,11 +1,16 @@
 # 環境仕様書
 
 ## インストールするもの
-- VirtualBox
-- Vagrant
-- PHP バージョン7.2
-- Nginx
-- Laravel バージョン6.0（仕様により6.20がインストールされてしまいます）
+
+| ソフトウェア  | バージョン    |
+| ------- | --------------- |
+| CentOS  | 7               |
+| PHP     | 7.3             |
+| Laravel | 6.0 (仕様により6.20) |
+| Nginx   | 1.21.           |
+| MySQL   | 5.7             |
+|         |                 |
+
 
 ### VirtualBoxのインストール
 ___
@@ -144,7 +149,7 @@ Vagrantfileがあるディレクトリにて以下のコマンドを実行して
 vagrant up
 ```
 もし下記のようなエラーが起きてしまった場合、
-> vboxの内容が CentOS 7.8で構成されているが、CentOS 7.9がリリースされてしまったため、インストールされているカーネルのバージョンと、一致する kernel-devel パッケージがリポジトリから取得できなくなってしまった。vbguest を使用しているため VirtualBox Guest Additions の更新で 該当するバージョンの kernel-devel を取得できずに失敗している。
+> vboxの内容が CentOS 7.8で構成されているが、CentOS 7.9がリリースされてしまったため、インストールされているカーネルのバージョンと、一致する kernel-devel パッケージがリポジトリから取得できなくなってしまった。vbguest を使用しているため VirtualBox Guest Additions の更新で 該当するバージョンの kernel-devel を取得できずに失敗している。[参考サイト](https://qiita.com/mao172/items/f1af5bedd0e9536169ae)
 
 という原因が考えられます。
 ```
@@ -533,3 +538,41 @@ vagrant ssh
 sudo systemctl start nginx
 sudo systemctl start php-fpm
 ```
+___
+### 環境構築の所感
+___
+- PCのOSのバージョンによってServer-Lessonと同じようにやってもうまくいかないことがあるので、その対処をすることがかなり大変だった。
+- この手順書を参考にする人が迷うことなく仮想環境を構築できるように心がけて手順書を作成したが、それでも相手の立場になって説明をすることは難しかった。
+- 今回インストールしたものそれぞれに設定ファイルがあり、その設定の記述が一つでも間違っていたら上手くいかないという仮想環境構築の難しさを感じた。
+- Nginxを起動しtodoアプリにアクセスした時、エラーコードを見てサーバーに問題があるか、サーバーが動いているかなどエラー対処の判断材料になったのでエラーコードを読み解くことは大切だと改めて感じた。
+
+___
+### 参考サイト
+___
+「AIMEK's blog」 VSCode Text Tablesの使い方
+
+https://aimek-developer.blogspot.com/2019/10/vs-code-02.html
+
+「Qiita」 Markdown記法 チートシート
+
+https://qiita.com/Qiita/items/c686397e4a0f4f11683d
+
+「Laravel Readouble」 Laravel6.*認証
+
+https://readouble.com/laravel/6.x/ja/authentication.html
+
+「Qiita」　Laravel 6 $ composer require laravel/uiを実行するとエラーが発生する
+https://qiita.com/miriwo/items/767b5f69ffaba85ebf6e
+
+「キツネの惑星」　【Linux環境構築】VagrantとVirtualBoxとは？使い方を初心者向けに解説！
+
+https://kitsune.blog/linux-environment#Vagrantfile%E3%82%92%E4%BD%9C%E6%88%90
+
+「Qiita」 # Vagrant + VirtualBOx で 最新のCentOS7 vbox(centos/7 2004.01)でマウントできない問題
+
+https://qiita.com/mao172/items/f1af5bedd0e9536169ae
+
+
+「Qiita」 vagrantの共有フォルダ内のファイルにchmodが効かない場合
+
+https://qiita.com/tatsuo-iriyama/items/4e62180ba453d475d258

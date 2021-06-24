@@ -1,4 +1,32 @@
+<!-- omit in toc -->
 # 環境仕様書
+
+- [インストールするもの](#インストールするもの)
+  - [VirtualBoxのインストール](#virtualboxのインストール)
+    - [Mac](#mac)
+    - [Windows](#windows)
+  - [Vagrantのインストール](#vagrantのインストール)
+    - [Mac](#mac-1)
+    - [Windows](#windows-1)
+  - [仮想環境のOSをダウンロード](#仮想環境のosをダウンロード)
+  - [Vagrantの作業用ディレクトリを作成](#vagrantの作業用ディレクトリを作成)
+  - [Vagrantfileの編集](#vagrantfileの編集)
+  - [Vagrant プラグインのインストール](#vagrant-プラグインのインストール)
+  - [ゲストOSの起動](#ゲストosの起動)
+  - [ゲストOSへのログイン](#ゲストosへのログイン)
+    - [Mac](#mac-2)
+    - [windows](#windows-2)
+  - [Laravelアプリケーションの作成](#laravelアプリケーションの作成)
+  - [make:Auth について](#makeauth-について)
+  - [ゲストOS内にWebサーバーとなるNginxをインストール](#ゲストos内にwebサーバーとなるnginxをインストール)
+  - [Nginxの設定・起動](#nginxの設定起動)
+  - [それでもpermission denied が発生してしまう場合](#それでもpermission-denied-が発生してしまう場合)
+  - [データベースのインストール](#データベースのインストール)
+  - [データベースの作成](#データベースの作成)
+  - [Laravelを動かす](#laravelを動かす)
+  - [それでもアクセスできない場合](#それでもアクセスできない場合)
+  - [環境構築の所感](#環境構築の所感)
+  - [参考サイト](#参考サイト)
 
 ## インストールするもの
 
@@ -9,14 +37,17 @@
 | Laravel | 6.0 (仕様により6.20) |
 | Nginx   | 1.21.           |
 | MySQL   | 5.7             |
-|         |                 |
 
 
 ### VirtualBoxのインストール
 ___
-VirtualBoxを[公式サイト](https://www.virtualbox.org/wiki/Download_Old_Builds_6_0)からダウンロード後、インストールしてください。<br>
-* MacOSの方→**OS X hosts** を選択<br>※macOS Big Surを使用している方は最新版のVirtualBox 6.0.24をインストールしてください
-* WindowsOSの方→**Windows hosts** を選択<br>
+VirtualBoxを[公式サイト](https://www.virtualbox.org/wiki/Download_Old_Builds_6_0)からダウンロード後、インストールしてください。Vagrantの最新バージョンがVirtualBoxの最新バージョンに対応していないため、Virtual Boxはver6.0.14をインストールするようにしてください。
+
+
+* MacOSの方→**OS X hosts** を選択
+
+※MacOS Big Surを使用している方は最新版のVirtualBox 6.0.24をインストールしてください
+* WindowsOSの方→**Windows hosts** を選択
 
 
 #### Mac
@@ -29,8 +60,8 @@ $ virtualbox
 
 ### Vagrantのインストール
 ___
-#### mac
-Homebrewを使ってインストールします。<br>
+#### Mac
+Homebrewを使ってインストールします。
 下記コマンドを実行してください。
 ```
 $ brew cask install vagrant
@@ -42,12 +73,16 @@ $ brew install --cask vagrant
 インストールが終わったら vagrant コマンドが使用可能かどうか確認するため以下のコマンドを実行しましょう。バージョンが確認できたらインストールできています。
 ```
 $ vagrant -v
+#例
+Vagrant 2.2.16
 ```
 #### Windows
 Vagrantの[公式サイト](https://www.vagrantup.com/)からインストールしてください。
 インストールが終わったら vagrant コマンドが使用可能かどうか確認するため以下のコマンドを実行しましょう。バージョンが確認できたらインストールできています。
 ```
 $ vagrant -v
+#例
+Vagrant 2.2.16
 ```
 ___
 ### 仮想環境のOSをダウンロード
@@ -78,11 +113,13 @@ Successfully added box 'centos/7' (v1902.01) for 'virtualbox'!
 ___
 ### Vagrantの作業用ディレクトリを作成
 ___
-Vagrantの作業用ディレクトリを作成します。<br>
-作成したディレクトリを移動させると、ゲストOSへのログインが上手くいかなくなってしまうので、自分が作業しやすいディレクトリに作成するのが良いでしょう。<br>
+Vagrantの作業用ディレクトリを作成します。
+作成したディレクトリを移動させると、ゲストOSへのログインが上手くいかなくなってしまうので、自分が作業しやすいディレクトリに作成するのが良いでしょう。
+
+
 <例>
  - デスクトップ
- - 自分の作業用ディレクトリ<br>
+ - 自分の作業用ディレクトリ
 
 ```
 mkdir vagrant_test
@@ -105,7 +142,9 @@ the comments in the Vagrantfile as well as documentation on
 ___
 ### Vagrantfileの編集
 ___
-Vagrantfileはこれから稼働させる仮想環境の設計書のようなものです。これをもとに仮想環境が構築されます。<br>
+Vagrantfileはこれから稼働させる仮想環境の設計書のようなものです。これをもとに仮想環境が構築されます。
+
+
 `vagrant_test`ディレクトリにある`Vagrantfile`を編集していきます。
 `vagrant_test`ディレクトリ内で下記のコマンドを実行し`Vagrantfile`をエディタで編集しましょう。
 ```
@@ -131,8 +170,10 @@ config.vm.synced_folder "./", "/vagrant", type:"virtualbox"
 ___
 ### Vagrant プラグインのインストール
 ___
-vagrant-vbguest というプラグインをインストールします。<br>
-vagrant-vbguestは初めに追加したBoxの中にインストールされているGuest Additionsというもののバージョンを、VirtualBoxのバージョンに合わせて最新化してくれるプラグインです。<br>
+vagrant-vbguest というプラグインをインストールします。
+
+
+vagrant-vbguestは初めに追加したBoxの中にインストールされているGuest Additionsというもののバージョンを、VirtualBoxのバージョンに合わせて最新化してくれるプラグインです。
 下記のコマンドを実行し、インストールしてください。
 ```
 vagrant plugin install vagrant-vbguest
@@ -140,6 +181,8 @@ vagrant plugin install vagrant-vbguest
 下記のコマンドを実行しvagrant-vbguestのインストールが完了しているか確認してください。
 ```
 vagrant plugin list
+#例
+vagrant-vbguest (0.30.0, global)
 ```
 ___
 ### ゲストOSの起動
@@ -148,10 +191,6 @@ Vagrantfileがあるディレクトリにて以下のコマンドを実行して
 ```
 vagrant up
 ```
-もし下記のようなエラーが起きてしまった場合、
-> vboxの内容が CentOS 7.8で構成されているが、CentOS 7.9がリリースされてしまったため、インストールされているカーネルのバージョンと、一致する kernel-devel パッケージがリポジトリから取得できなくなってしまった。vbguest を使用しているため VirtualBox Guest Additions の更新で 該当するバージョンの kernel-devel を取得できずに失敗している。[参考サイト](https://qiita.com/mao172/items/f1af5bedd0e9536169ae)
-
-という原因が考えられます。
 ```
 The following SSH command responded with a non-zero exit status.
 Vagrant assumes that this means the command failed!
@@ -163,6 +202,12 @@ Stderr from the command:
 
 umount: /mnt: not mounted
 ```
+
+もし上記のようなエラーが起きてしまった場合、
+> vboxの内容が CentOS 7.8で構成されているが、CentOS 7.9がリリースされてしまったため、インストールされているカーネルのバージョンと、一致する kernel-devel パッケージがリポジトリから取得できなくなってしまった。vbguest を使用しているため VirtualBox Guest Additions の更新で 該当するバージョンの kernel-devel を取得できずに失敗している。[参考サイト](https://qiita.com/mao172/items/f1af5bedd0e9536169ae)
+
+という原因が考えられます。
+
 下記のコマンドに従って再度`vagrant up`をしてみてください
 ```
 vagrant ssh
@@ -173,7 +218,7 @@ vagrant reload --provision
 ___
 ### ゲストOSへのログイン
 ___
-#### mac
+#### Mac
 vagrant_test ディレクトリに移動して下記のコマンドを実行しましょう。
 ```
 vagrant ssh
@@ -200,7 +245,9 @@ vagrant_test/.vagrant/machines/default/virtualbox 下の private_key を指定�
 ___
 必要なパッケージのインストール
 ___
-現段階でゲストOSは立ち上がりましたが、開発するにあたって必要となるソフトウェアやコマンドなどがインストールされていない状態です。<br>
+現段階でゲストOSは立ち上がりましたが、開発するにあたって必要となるソフトウェアやコマンドなどがインストールされていない状態です。
+
+
 まずはグループパッケージをインストールしていきましょう。
 下記のコマンドを実行してください。gitなどの開発に必要なパッケージを一括でインストールできます。
 ```
@@ -296,7 +343,7 @@ sudo systemctl start nginx
 ブラウザにて [http://192.168.33.19](http://192.168.33.19) (Vagrantfileでipを書き換えた方はそのipアドレス)と入力し、NginxのWelcomeページが表示されましたでしょうか？
 表示されたら問題なく動いています。
 ___
-### Laravelを動かす
+### Nginxの設定・起動
 ___
 Nginxにも設定ファイルが存在しているので編集を行います。
 使用しているOSがCentOSの場合、`/etc/nginx/conf.d` ディレクトリ下の `default.conf` ファイルが設定ファイルとなります。
